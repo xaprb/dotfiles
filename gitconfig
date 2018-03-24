@@ -1,0 +1,13 @@
+[user]
+	name = Baron Schwartz
+	email = xaprb@users.noreply.github.com
+[color]
+	ui = true
+[push]
+	default = current
+[merge]
+	defaultToUpstream = true
+[pull]
+	rebase = true
+[credential]
+	helper = osxkeychain

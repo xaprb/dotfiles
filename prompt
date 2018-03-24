@@ -1,0 +1,6 @@
+# Enables colorized 'ls'
+export CLICOLOR=1
+export LSCOLORS=gxfxcxdxbxegedabagacad
+
+# Default PS1='\h:\W \u\$ '
+PS1='\W $ '

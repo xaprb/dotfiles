@@ -1,0 +1,5 @@
+PATH="/usr/local/bin:$PATH:$HOME/bin/:$HOME/repos/xaprb/dotfiles/bin"
+export PATH
+
+export EDITOR=`which vim`
+export GPG_TTY=tty
