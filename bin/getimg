@@ -1,0 +1,49 @@
+#!/bin/sh
+set -e
+
+# Download images and crop/resize them for use in my blog.
+# This is built for Unsplash photos at this time.
+# Example invocation within Vim:
+# :r! getimg %s https://unsplash.com/photos/Dm974WDaErc/download?force=true
+
+if [ -z "$2" ]; then
+	exit 1
+fi
+
+FILE="$1" # The file we're injecting into
+IMG="$2"  # The image we're downloading
+
+# Get the date in YYYY-MM-DD format.
+DATE=$(awk '/^date:/{sub(/^[^0-9]*/, ""); sub(/[^0-9-].*$/, ""); print}' \
+	"$FILE")
+DATE="${DATE%-*}"   # Trim the -DD component
+DATE="${DATE/-//}" # Replace dashes with slashes; now it's like 2013/08
+
+# What is it called?
+# :r! getimg %s https://unsplash.com/photos/Dm974WDaErc/download?force=true
+NAME="unsplash-${IMG##*unsplash.com/}" # Strip prefix
+NAME="${NAME%%/download*}"        # Strip suffix
+NAME="${NAME//\//-}.jpg"          # Convert slashes to dashes
+
+# Download it, resize it. What directory, first? If CWD is beneath /content/
+# strip that suffix out so this will work regardless of where in the Hugo site
+# we're located at the moment.
+if echo "$PWD/$FILE" | grep slides >/dev/null 2>&1; then
+	DIR=$(dirname "$PWD/$FILE")
+	mkdir -p "$DIR"
+	curl -s -L "$IMG" > "$DIR/$NAME"
+	convert "$DIR/$NAME" -resize 1920x1080^ \
+		-gravity center -crop 1920x1080+0+0 +repage "$DIR/$NAME"
+	echo "background-image: url($NAME)"
+	echo "\![Image]($NAME)"
+else
+	DIR="${PWD%%/content*}/static/media/$DATE"
+	mkdir -p "$DIR"
+	curl -s -L "$IMG" > "$DIR/$NAME"
+	convert "$DIR/$NAME" -resize 1280x720^ \
+		-gravity center -crop 1280x720+0+0 +repage "$DIR/$NAME"
+
+	# Inject it in the front matter by printing out the credit and filename
+	echo credit: \""${IMG%%/download*}"\"
+	echo image: \""/media/$DATE/$NAME"\"
+fi

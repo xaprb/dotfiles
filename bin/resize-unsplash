@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+ls ~/Downloads/ | grep unsplash | grep -v crdownload | while read img; do
+	convert ~/Downloads/"$img" -resize 1920x1080 ~/Downloads/"$img"
+	mv ~/Downloads/"$img" .
+	echo "$img"
+done
