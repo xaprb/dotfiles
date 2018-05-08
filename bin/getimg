@@ -2,7 +2,10 @@
 set -e
 
 # Download images and crop/resize them for use in my blog.
-# This is built for Unsplash photos at this time.
+# This is built for Unsplash photos at this time. It will resize+crop for
+# blog header image or fullscreen slide background depending on whether the file
+# is under /content/slides/ or not.
+
 # Example invocation within Vim:
 # :r! getimg %s https://unsplash.com/photos/Dm974WDaErc/download?force=true
 
@@ -29,6 +32,7 @@ NAME="${NAME//\//-}.jpg"          # Convert slashes to dashes
 # strip that suffix out so this will work regardless of where in the Hugo site
 # we're located at the moment.
 if echo "$PWD/$FILE" | grep slides >/dev/null 2>&1; then
+	# Slideshow content.
 	DIR=$(dirname "$PWD/$FILE")
 	mkdir -p "$DIR"
 	curl -s -L "$IMG" > "$DIR/$NAME"
@@ -37,6 +41,7 @@ if echo "$PWD/$FILE" | grep slides >/dev/null 2>&1; then
 	echo "background-image: url($NAME)"
 	echo "\![Image]($NAME)"
 else
+	# Blog header image.
 	DIR="${PWD%%/content*}/static/media/$DATE"
 	mkdir -p "$DIR"
 	curl -s -L "$IMG" > "$DIR/$NAME"

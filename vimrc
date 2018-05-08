@@ -33,7 +33,7 @@ filetype plugin indent on
 syntax on
 
 " auto-format Go code
-autocmd FileType go autocmd BufWritePre <buffer> Fmt
+" autocmd FileType go autocmd BufWritePre <buffer> Fmt
 
 " set makeprg=perl\ -c\ %
 " set errorformat=%m\ at\ %f\ line\ %l%.%#,%-G%.%#
