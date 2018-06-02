@@ -24,9 +24,22 @@ DATE="${DATE/-//}" # Replace dashes with slashes; now it's like 2013/08
 
 # What is it called?
 # :r! getimg %s https://unsplash.com/photos/Dm974WDaErc/download?force=true
-NAME="unsplash-${IMG##*unsplash.com/}" # Strip prefix
-NAME="${NAME%%/download*}"        # Strip suffix
-NAME="${NAME//\//-}.jpg"          # Convert slashes to dashes
+# :r! getimg %s https://pixabay.com/en/vernier-caliper-measuring-instrument-452987/
+if echo "$IMG" | grep unsplash >/dev/null 2>&1; then
+	NAME="unsplash-${IMG##*unsplash.com/}" # Strip prefix
+	NAME="${NAME%%/download*}"        # Strip suffix
+	NAME="${NAME//\//-}.jpg"          # Convert slashes to dashes
+	CDN="$IMG"
+else
+	# Assume pixabay
+	NAME="pixabay-${IMG##*pixabay.com/}"	# Strip prefix
+	NAME="${NAME%/}"								# Strip trailing slash
+	NAME="${NAME//\//-}.jpg"					# Convert slashes to dashes
+	# Fetch the page and grep out the og:image meta tag to get the CDN filename
+	CDN=$(curl -s -L "$IMG" | grep og:image)
+	CDN="${CDN##*content=?}"			# Strip prefix
+	CDN="${CDN%%_640.jpg*}_1280.jpg" # Strip suffix and replace with _1280.jpg
+fi
 
 # Download it, resize it. What directory, first? If CWD is beneath /content/
 # strip that suffix out so this will work regardless of where in the Hugo site
@@ -35,7 +48,7 @@ if echo "$PWD/$FILE" | grep slides >/dev/null 2>&1; then
 	# Slideshow content.
 	DIR=$(dirname "$PWD/$FILE")
 	mkdir -p "$DIR"
-	curl -s -L "$IMG" > "$DIR/$NAME"
+	curl -s -L "$CDN" > "$DIR/$NAME"
 	convert "$DIR/$NAME" -resize 1920x1080^ \
 		-gravity center -crop 1920x1080+0+0 +repage "$DIR/$NAME"
 	echo "background-image: url($NAME)"
@@ -44,7 +57,7 @@ else
 	# Blog header image.
 	DIR="${PWD%%/content*}/static/media/$DATE"
 	mkdir -p "$DIR"
-	curl -s -L "$IMG" > "$DIR/$NAME"
+	curl -s -L "$CDN" > "$DIR/$NAME"
 	convert "$DIR/$NAME" -resize 1280x720^ \
 		-gravity center -crop 1280x720+0+0 +repage "$DIR/$NAME"
 

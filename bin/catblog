@@ -1,0 +1,121 @@
+#!/bin/sh
+set -e
+
+# Syntax: catblog <dir> [<pattern>]
+# Pattern is optional
+#
+# Finds all *.md files in dir [with contents matching the grep pattern]
+# For each, it prints the categories, then waits for a command:
+# 
+# n: go to next file
+# c: replace categories, reading one per line, ending with an empty line
+# o: open the blog post in the browser, assuming Hugo at localhost:1313
+
+DIR="$1"
+PAT="$2"
+if [ -z "$1" ]; then
+	echo "Syntax: catblog <dir> [<pattern>]"
+	exit 1
+fi
+
+FILES=$(mktemp -t catblog)
+SCRIPT=$(mktemp -t catblog)
+CATS=$(mktemp -t catblog)
+SCRATCH=$(mktemp -t catblog)
+
+if [ -z "$PAT" ]; then
+	find "$DIR" -type f -print > "$FILES"
+else
+	find "$DIR" -type f -exec grep -i -q "$PAT" '{}' \; -print > "$FILES"
+fi
+
+cat "$FILES" | while read FILE; do
+
+	# Extract the URL and title
+	cat > "$SCRIPT" <<-'EOF'
+	/url: /{
+		sub(/^[^'"]*["']/, "");
+		sub(/["'].*$/, "");
+		print $0;
+	}
+	EOF
+	URL=$(awk -f "$SCRIPT" "$FILE")
+	URL="${URL#url: }"
+	cat > "$SCRIPT" <<-'EOF'
+	/title: /{
+		sub(/^[^'"]*["']/, "");
+		sub(/["'].*$/, "");
+		print $0;
+	}
+	EOF
+	TITLE=$(awk -f "$SCRIPT" "$FILE")
+	TITLE="${TITLE#title: }"
+
+	clear
+	echo "File:  $FILE"
+	echo "URL:   $URL"
+	echo "Title: $TITLE"
+	echo "Categories:"
+
+	cat > "$SCRIPT" <<-'EOF'
+	/^[^-]/ && cat {
+		exit;
+	}
+	/^categories:/{cat=1}
+	/^-/ && cat {
+		print $0;
+	}
+	EOF
+	awk -f "$SCRIPT" "$FILE"
+
+	while true; do
+		# Wait for a command
+		/bin/echo -n "Command: [n]ext, [c]ategories, [o]pen, [r]evert, [q]uit: "
+		read -u 1 CMD
+		case "$CMD" in
+			r)
+				git checkout "$FILE"
+				;;
+			q)
+				exit
+				;;
+			n)
+				break
+				;;
+			c)
+				# Print until categories start
+				sed '/categories:/{q;}' "$FILE" > "$SCRATCH"
+				echo "Enter categories one per line, ending with empty line:"
+				while read -u 1 LINE; do
+					if [ -z "$LINE" ]; then
+						break
+					fi
+					echo "- ${LINE#- }" >> "$SCRATCH"
+				done
+				# Print after categories end
+				cat > "$SCRIPT" <<-'EOF'
+				{
+					if (cat==1 && $0 !~ /^ *-/) {
+						p=1;
+					}
+					if ($0 ~ /^categories:/) {
+						cat=1;
+					}
+					if (p) {
+						print $0;
+					}
+				}
+				EOF
+				awk -f "$SCRIPT" "$FILE" >> "$SCRATCH"
+				mv "$SCRATCH" "$FILE"
+				git diff "$FILE"
+				;;
+			o)
+				open "http://localhost:1313$URL"
+				;;
+		esac
+	done
+
+done
+
+rm -f "$FILES" "$SCRIPT" "$CATS"
