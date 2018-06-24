@@ -51,8 +51,10 @@ if echo "$PWD/$FILE" | grep slides >/dev/null 2>&1; then
 	curl -s -L "$CDN" > "$DIR/$NAME"
 	convert "$DIR/$NAME" -resize 1920x1080^ \
 		-gravity center -crop 1920x1080+0+0 +repage "$DIR/$NAME"
+	echo ".rc[<img src=\"$NAME\" style=\"height: 100%; width: 100%; object-fit: cover\">]"
+	echo '![Image]('$NAME')'
 	echo "background-image: url($NAME)"
-	echo "\![Image]($NAME)"
+	echo "background-size: cover"
 else
 	# Blog header image.
 	DIR="${PWD%%/content*}/static/media/$DATE"

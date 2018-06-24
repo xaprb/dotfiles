@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# from https://apple.stackexchange.com/questions/194368/turn-wifi-off-on-with-a-single-key
+# A good key: Cmd-Ctrl-Shift-W
+# find with networksetup -listnetworkserviceorder
+IF=en0
+
+networksetup -getairportpower $IF | grep "On" && networksetup -setairportpower $IF off || networksetup -setairportpower $IF on

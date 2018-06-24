@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+	echo "Specify a filename"
+	exit 1
+fi
+
+while sleep .5; do
+  if [ ${1%%.tex}.tex -nt ${1%%.tex}.pdf ] || [ -z "$ran" ]; then
+    xelatex --interaction=nonstopmode $1 || \
+      osascript -e 'display notification "Latex compilation failed" with title "ERROR"'
+      ran=1
+  fi
+done
