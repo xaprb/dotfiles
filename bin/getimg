@@ -51,6 +51,7 @@ if echo "$PWD/$FILE" | grep slides >/dev/null 2>&1; then
 	curl -s -L "$CDN" > "$DIR/$NAME"
 	convert "$DIR/$NAME" -resize 1920x1080^ \
 		-gravity center -crop 1920x1080+0+0 +repage "$DIR/$NAME"
+	tinypng "$DIR/$NAME" || true # ok if it fails, give it a try tho
 	echo ".rc[<img src=\"$NAME\" style=\"height: 100%; width: 100%; object-fit: cover\">]"
 	echo '![Image]('$NAME')'
 	echo "background-image: url($NAME)"
@@ -62,6 +63,7 @@ else
 	curl -s -L "$CDN" > "$DIR/$NAME"
 	convert "$DIR/$NAME" -resize 1280x720^ \
 		-gravity center -crop 1280x720+0+0 +repage "$DIR/$NAME"
+	tinypng "$DIR/$NAME" || true # ok if it fails, give it a try tho
 
 	# Inject it in the front matter by printing out the credit and filename
 	echo credit: \""${IMG%%/download*}"\"
