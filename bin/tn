@@ -1,7 +1,9 @@
 #!/bin/sh
 set -e
 
-# Gets the image file from the front matter and crops it to 256x256 thumbnail.
+SIZE=500x500
+
+# Gets the image file from the front matter and crops it to thumbnail.
 # Example invocation within Vim:
 # :r! tn %s
 
@@ -14,9 +16,9 @@ IMG=$(awk '/^image:/ {print $2}' "$FILE")
 IMG=$(echo $IMG | sed -e s/'"'//g -e s/"'"//g)
 
 DIR="${PWD%%/content*}/static"
-TN=${IMG%%.jpg}.tn-256x256.jpg
-convert $DIR/$IMG -resize 256x256^ \
-	-gravity center -crop 256x256+0+0 +repage $DIR/$TN
+TN=${IMG%%.jpg}.tn-$SIZE.jpg
+convert $DIR/$IMG -resize $SIZE^ \
+	-gravity center -crop $SIZE+0+0 +repage $DIR/$TN
 
 tinypng $DIR/$TN || true; # ok if it fails, but give it a try
 # Inject it in the front matter by printing out the filename
