@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+# Open a blog post's URL in the browser
+# Example invocation within Vim:
+# :!o %
+
+if [ -z "$1" ]; then
+	exit 1
+fi
+
+FILE="$1" # The file we're editing
+
+# Get the date in YYYY-MM-DD format.
+URL=$(awk '/^url:/{gsub(/"/, "", $2); print $2}' "$FILE")
+open http://localhost:1313$URL
