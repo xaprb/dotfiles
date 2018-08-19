@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+# Open a post in $EDITOR, using its URL, assuming cwd is the root of the
+# blog repo. Example invocation:
+# f http://localhost:1313/blog/2013/03/14/crash-injection-for-writing-resilient-software/
+
+if [ -z "$1" ]; then
+	exit 1
+fi
+
+URL="$1"
+URL="${URL#*1313}"
+URL="${URL%/}"
+FILE=$(grep -Irl "^url:.*$URL" content | head -1)
+$EDITOR "$FILE"
