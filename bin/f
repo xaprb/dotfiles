@@ -4,13 +4,18 @@ set -e
 # Open a post in $EDITOR, using its URL, assuming cwd is the root of the
 # blog repo. Example invocation:
 # f http://localhost:1313/blog/2013/03/14/crash-injection-for-writing-resilient-software/
+# f https://www.xaprb.com/blog/2010/05/01/a-review-of-forecasting-oracle-performance-by-craig-shallahamer/
 
 if [ -z "$1" ]; then
 	exit 1
 fi
 
-URL="$1"
-URL="${URL#*1313}"
+# set -x
+# Strip off the leading components
+URL="${1#*1313}"
+URL="${URL#*www.xaprb.com}"
+# Strip off the trailing slash
 URL="${URL%/}"
+# Find files that have this URL in the front matter
 FILE=$(grep -Irl "^url:.*$URL" content | head -1)
 $EDITOR "$FILE"

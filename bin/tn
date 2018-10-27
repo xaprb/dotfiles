@@ -20,6 +20,6 @@ TN=${IMG%%.jpg}.tn-$SIZE.jpg
 convert $DIR/$IMG -resize $SIZE^ \
 	-gravity center -crop $SIZE+0+0 +repage $DIR/$TN
 
-tinypng $DIR/$TN || true; # ok if it fails, but give it a try
+(tinypng $DIR/$TN || true)& # ok if it fails, but give it a try
 # Inject it in the front matter by printing out the filename
 echo thumbnail: $TN

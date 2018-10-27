@@ -10,16 +10,18 @@ fi
 KEY="$(cat ~/.tinypngrc)"
 
 tf=$(mktemp /tmp/tinypng.XXXX)
-if curl -i --user "api:$KEY" --data-binary @"$1" https://api.tinypng.com/shrink > "$tf" 2>&1; then
+if curl -isS --user "api:$KEY" --data-binary @"$1" https://api.tinypng.com/shrink > "$tf"; then
 	dos2unix "$tf" >/dev/null 2>&1
 	# Location: https://api.tinypng.com/output/2xnsp7jn34e5.png
 	loc=$(awk '/[Ll]ocation:/ {print $2}' "$tf")
-	if curl -s "$loc" > "$tf.img"; then
+	if curl -sS "$loc" > "$tf.img"; then
 		mv "$tf.img" "$1"
 	else
 		exit 1
 	fi
 else
+	cat "$tf"
+	rm "$tf"
 	exit 1
 fi
 rm "$tf"

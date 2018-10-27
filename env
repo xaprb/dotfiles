@@ -3,3 +3,6 @@ export PATH
 
 export EDITOR=`which vim`
 export GPG_TTY=tty
+
+HISTSIZE=1000
+HISTFILESIZE=2000
